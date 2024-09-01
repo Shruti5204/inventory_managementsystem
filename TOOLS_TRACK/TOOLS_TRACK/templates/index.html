@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Inventory Management System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <style>
+
+        body{
+
+            background-color: gray;
+
+        }
+
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <img src="/static/images/logo.png" alt="Logo" class="logo">  
+        <center><h1>Welcome to Inventory Management System</h1></center> 
+        <h2><login class="html"></login></h2>
+        <p>Please choose your login type</p>
+        <div class="login-buttons">
+            <a href="{{ url_for('login', role='admin') }}" class="button">Admin Login</a>
+            <a href="{{ url_for('login', role='supervisor') }}" class="button">Supervisor Login</a>
+            <a href="{{ url_for('login', role='user') }}" class="button">User Login</a>
+        </div>
+    </div>
+</body>
+</html> 

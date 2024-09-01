@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supervisor Dashboard - Tool Tracking System</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #2F4F4F;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #B0C4DE;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .logo {
+            max-width: 150px;
+            margin-bottom: 20px;
+        }
+        h1, h3 {
+            color: #333;
+        }
+        a.button {
+            display: inline-block;
+            padding: 10px 20px;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.3s;
+            margin-top: 20px;
+        }
+        a.button:hover {
+            background-color: #0056b3;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #ddd;
+        }
+        tr:nth-child(even) {
+            background-color: #f8f6df;
+        }
+        tr:nth-child(odd) {
+            background-color: #f8f6df;
+        }
+        button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button.approve {
+            background-color: #4CAF50;
+            color: white;
+        }
+        button.approve:hover {
+            background-color: #45a049;
+        }
+        button.reject {
+            background-color: #f44336;
+            color: white;
+        }
+        button.reject:hover {
+            background-color: #e41e26;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <center>
+            <img src="/static/images/logo.png" alt="Logo" class="logo">
+            <h1>Supervisor Dashboard</h1>
+            <h3>Hello {{username}}</h3>
+            <a href="{{ url_for('logout') }}" class="button">Logout</a>
+        </center>
+        <table>
+            <thead>
+                <tr>
+                    <th>Request ID</th>
+                    <th>Request By</th>
+                    <th>Tool Name</th>
+                    <th>Quantity</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for request in requests %}
+                    <tr>
+                        <td>{{ request[0] }}</td>
+                        <td>{{ request[3] }}</td>
+                        <td>{{ request[1] }}</td>
+                        <td>{{ request[2] }}</td>
+                        <td>
+                            <form action="{{ url_for('approve_request', request_id=request[0]) }}" method="post" style="display: inline;">
+                                <button type="submit" class="approve">Approve</button>
+                            </form>
+                            <form action="{{ url_for('reject_request', request_id=request[0]) }}" method="post" style="display: inline;">
+                                <button type="submit" class="reject">Reject</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

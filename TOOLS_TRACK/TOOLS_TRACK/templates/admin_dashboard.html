@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Tool Tracking System</title>
+        <!-- Bootstrap CSS (for styling) -->
+        <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+        <!-- Bootstrap Datepicker CSS -->
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4; 
+            margin: 0;
+            padding: 0;
+            color: #333; 
+        }
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff; 
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .logo {
+            max-width: 150px;
+            display: block;
+            margin: 0 auto 20px; 
+        }
+        h1, h2, h3 {
+            text-align: center; 
+            margin-top: 0; 
+            color: #333; 
+        }
+        a.button {
+            display: inline-block;
+            padding: 10px 20px;
+            color: #fff;
+            background-color: #007bff; 
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.3s;
+            margin-top: 20px;
+        }
+        a.button:hover {
+            background-color: #0056b3; 
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            text-align: center; 
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        thead {
+            background-color: #f2f2f2; 
+        }
+        tbody tr:nth-child(even) {
+            background-color: #f9f9f9; 
+        }
+        button {
+            background-color: #4644d1; 
+            color: white;
+            padding: 6px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #3636b8; 
+        }
+        .gap {
+            height: 30px; 
+        }
+
+        input[type="number"] {
+            width: 50px;
+            text-align: center;
+        }
+
+        .datepicker {
+            width: 150px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="/static/images/logo.png" alt="Logo" class="logo">
+        <h1>Admin Dashboard</h1>
+        <h3>Hello {{username}}</h3>
+        <center><a href="{{ url_for('logout') }}" class="button">Logout</a></center>
+
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <ul class="flash-messages">
+            {% for message in messages %}
+              <li>{{ message }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      {% endwith %}
+        <div class="gap"></div>
+
+        <h2>Pending Tool Issues</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Request ID</th>
+                    <th>Request By</th>
+                    <th>Tool Name</th>
+                    <th>Quantity</th>
+                    <th>Due Date</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for request in requests %}
+                    <tr>
+                        <td>{{ request[0] }}</td>
+                        <td>{{ request[3] }}</td>
+                        <td>{{ request[1] }}</td>
+                        <td>
+                            <form action="{{ url_for('issue_items', request_id=request[0]) }}" method="post">
+                                <input type="number" name="quantity" value="{{ request[2] }}" min="1" style="width: 50px; text-align: center;">
+                        </td>
+                        <td>
+                            <input type="text" class="datepicker" name="due_date" id="due_date_{{ request[0] }}" value="" readonly>
+                        </td>
+                        <td>
+                                <button type="submit">Issue</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="gap"></div>
+
+        <h2>Issued Tools</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Request ID</th>
+                    <th>Request By</th>
+                    <th>Tool Name</th>
+                    <th>Issued Quantity</th>
+                    <th>Remaining Quantity</th>
+                    <th>Return Quantity</th>
+                    <th>Due Date</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for request in requests2 %}
+                    <tr>
+                        <td>{{ request[0] }}</td>
+                        <td>{{ request[3] }}</td>
+                        <td>{{ request[1] }}</td>
+                        <td>{{ request[2] }}</td>
+                        <td>{{ request[2] - request[9] }}</td>
+                        <td>
+                            <form action="{{ url_for('return_items', request_id=request[0]) }}" method="post">
+                                <input type="number" name="quantity" value="{{ 1 }}" min="1" style="width: 50px; text-align: center;">
+                        </td>
+                        <td>{{ request[8] }}</td>
+                        <td>
+                            <form action="{{ url_for('return_items', request_id=request[0]) }}" method="post">
+                                <button type="submit">Return</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="gap"></div>
+
+        <h2>Returned Tools</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Request ID</th>
+                    <th>Request By</th>
+                    <th>Tool Name</th>
+                    <th>Quantity</th>
+                    <th>Issued At</th>
+                    <th>Due Date</th>
+                    <th>Returned At</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for request in requests3 %}
+                    <tr>
+                        <td>{{ request[0] }}</td>
+                        <td>{{ request[3] }}</td>
+                        <td>{{ request[1] }}</td>
+                        <td>{{ request[2] }}</td>
+                        <td>{{ request[4] }}</td>
+                        <td>{{ request[8] }}</td>
+                        <td>{{ request[7] }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+ 
+     <script>
+
+         $(document).ready(function () {
+             $('.datepicker').datepicker({
+                 format: 'dd/mm/yyyy',
+                 autoclose: true,
+                 todayHighlight: true
+             });
+         });
+     </script>
+</body>
+</html>

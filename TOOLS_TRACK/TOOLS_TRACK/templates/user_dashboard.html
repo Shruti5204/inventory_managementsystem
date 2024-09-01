@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard - Tool Tracking System</title>
+    <style>
+        body {
+            background-color: grey;
+        }
+
+        img {
+            width: 100px;
+            height: auto;
+            cursor: pointer;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo {
+            max-width: 150px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        .button {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 10px 20px;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .button:hover {
+            background-color: #0056b3;
+        }
+
+        #toolsList {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+
+        #toolsList li {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin: 10px 0;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        #toolsList h2 {
+            margin: 0;
+            flex: 1;
+            font-size: 24px;
+        }
+
+        #toolsList img {
+            max-width: 100px;
+            max-height: 100px;
+            margin-right: 20px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: transform 0.2s;
+        }
+
+        #toolsList img:hover {
+            transform: scale(1.05);
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+        }
+
+        .quantity-controls button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 16px;
+        }
+
+        .quantity-controls button:hover {
+            background-color: #0056b3;
+        }
+
+        .quantity-controls span {
+            margin: 0 10px;
+            font-size: 18px;
+            min-width: 30px;
+            text-align: center;
+        }
+
+        .request-button {
+            background-color: #28a745;
+            margin-left: 20px;
+        }
+
+        .request-button:hover {
+            background-color: #218838;
+        }
+
+        #cart {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .logout-button {
+            background-color: #dc3545;
+        }
+
+        .logout-button:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <center><img src="/static/images/logo.png" alt="Logo" class="logo"></center>
+        <center>
+            <h1>User Dashboard</h1>
+        </center>
+        <center><a>Hello {{username}}</a></center>
+        <center><a href="{{ url_for('logout') }}" class="button logout-button">Logout</a></center>
+        <ul id="toolsList">
+            {% for tool in tools %}
+            <li>
+                <img src="{{ tool['photo_url'] }}" alt="{{ tool['name'] }}" onclick="addToCart('{{ tool[name] }},')">
+                <div>
+                    <h2>{{ tool['name'] }}</h2>
+                    <div class="quantity-controls">
+                        <button onclick="changeQuantity('{{ tool[name] }}', -1)">-</button>
+                        <span id="{{ tool[name] }}-quantity">0</span>
+                        <button onclick="changeQuantity('{{ tool[name] }}', 1)">+</button>
+                    </div>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        <div id="cart">
+            <center>
+                <h2>Item Request List</h2>
+            </center>
+            <center>
+                <h3>Total Items: <span id="totalItems">0</span></h3>
+            </center>
+            <center>
+                <button class="button" onclick="sendRequest()">Request</button>
+            </center>
+        </div>
+    </div>
+
+    <script>
+        var cart = {};
+        var quantities = {};
+
+        function changeQuantity(toolName, change) {
+            var currentQuantity = quantities[toolName] || 0;
+            var newQuantity = currentQuantity + change;
+
+            if (newQuantity < 0) {
+                newQuantity = 0;
+            }
+            if change< 0{
+                console.log("LOL")
+            }
+            if (change > 0) {
+                var xhr = new XMLHttpRequest();
+                xhr.open("GET", `/check_availability/${toolName}/${newQuantity}`, true);
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4) {
+                        console.log("Response:", xhr.responseText);
+                        if (xhr.status === 200) {
+                            var response = JSON.parse(xhr.responseText);
+                            if (response.available) {
+                                quantities[toolName] = newQuantity;
+                                cart[toolName] = newQuantity;
+                                document.getElementById(`${toolName}-quantity`).innerText = newQuantity;
+                                updateCartDisplay();
+                            } else {
+                                alert(`Sorry, ${toolName} is not available in the requested quantity.`);
+                            }
+                        } else {
+                            alert("Error checking availability.");
+                        }
+                    }
+                };
+                xhr.send();
+            } else {
+                quantities[toolName] = newQuantity;
+                if (newQuantity > 0) {
+                    cart[toolName] = newQuantity;
+                } else {
+                    delete cart[toolName];
+                }
+                document.getElementById(`${toolName}-quantity`).innerText = newQuantity;
+                updateCartDisplay();
+            }
+        }
+
+        function updateCartDisplay() {
+            var totalItems = Object.values(cart).reduce((acc, val) => acc + val, 0);
+            document.getElementById('totalItems').textContent = totalItems;
+        }
+
+        function sendRequest() {
+            var availabilityCheck = true;
+            Object.entries(cart).forEach(([tool, quantity]) => {
+                var xhr = new XMLHttpRequest();
+                xhr.open("GET", `/check_availability/${tool}/${quantity}`, false);
+                xhr.send();
+                if (xhr.status == 200) {
+                    var response = JSON.parse(xhr.responseText);
+                    if (!response.available) {
+                        availabilityCheck = false;
+                        alert(`Sorry, ${tool} is not available in the requested quantity.`);
+                    }
+                } else {
+                    availabilityCheck = false;
+                    alert("Error checking availability.");
+                }
+            });
+
+            if (availabilityCheck) {
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", "/request_tools", true);
+                xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4 && xhr.status === 200) {
+                        var response = JSON.parse(xhr.responseText);
+                        if (response.success) {
+                            alert("Request sent successfully.");
+                            Object.keys(quantities).forEach(tool => {
+                                quantities[tool] = 0;
+                                document.getElementById(`${tool}-quantity`).innerText = 0;
+                            });
+                            cart = {}; 
+                            updateCartDisplay(); 
+                        } else {
+                            alert("Failed to send request.");
+                        }
+                    }
+                };
+                xhr.send(JSON.stringify({ tools: cart }));
+            }
+        }
+    </script>
+</body>
+
+</html>
